@@ -1,25 +1,22 @@
 {
   "expo": {
-    "name": "Nepe Coletor",
-    "slug": "uegsupermercado",
+    "name": "nepe-coletor",
+    "slug": "nepe-coletor",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.jpeg",
-    "scheme": "myapp",
+    "icon": "./assets/images/icon.png",
+    "scheme": "nepecoletor",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "bundleIdentifier": "com.gbrito10.uegsupermercado",
-      "buildNumber": "1.0.0",
-      "supportsTablet": true,
-      "icon": "./assets/images/logo.jpeg"
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo.jpeg",
+        "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.gbrito10.uegsupermercado"
+      "edgeToEdgeEnabled": true
     },
     "web": {
       "bundler": "metro",
@@ -40,14 +37,6 @@
     ],
     "experiments": {
       "typedRoutes": true
-    },
-    "extra": {
-      "router": {
-        "origin": false
-      },
-      "eas": {
-        "projectId": "4ea03ac8-5e9e-4c1d-8dd3-2330c601918e"
-      }
     }
   }
 }
