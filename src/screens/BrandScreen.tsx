@@ -19,7 +19,8 @@ import {
   listPrecosProduto,
   updatePreco,
   deleteMarca,
-  Marca
+  Marca,
+  updateMarca
 } from '../supabase';
 import { RootStackParamList } from '../navigation/AppNavigator';
 
@@ -33,6 +34,7 @@ export default function BrandScreen({ route }: Props) {
   const [priceIdMap, setPriceIdMap] = useState<Record<number, number>>({});
   const [newBrand, setNewBrand] = useState('');
   const [loading, setLoading] = useState(true);
+  const [editingName, setEditingName] = useState<Record<number, string>>({});
 
   async function loadData() {
     setLoading(true);
@@ -112,6 +114,22 @@ export default function BrandScreen({ route }: Props) {
     await loadData();
   };
 
+  const startEdit = (id: number, name: string) => {
+    setEditingName(prev => ({ ...prev, [id]: name }));
+  };
+
+  const confirmEdit = async (id: number) => {
+    const text = editingName[id]?.trim();
+    if (!text) return;
+    await updateMarca(id, text);
+    Alert.alert('✅ Marca atualizada');
+    setEditingName(prev => {
+      const { [id]: _, ...rest } = prev;
+      return rest;
+    });
+    await loadData();
+  };
+
   if (loading) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center bg-gray-50">
@@ -154,23 +172,48 @@ export default function BrandScreen({ route }: Props) {
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <View className="bg-white p-4 rounded-2xl mb-4 shadow-md">
-            {/* Nome da marca e botão de excluir */}
+            {/* Nome da marca, editar e excluir */}
             <View className="flex-row items-center justify-between mb-3">
-              <View className="flex-row items-center">
+              <View className="flex-row items-center flex-1">
                 <Icon name="tag" size={20} color="#4A90E2" />
-                <Text className="text-lg font-semibold text-gray-800 ml-3">
-                  {item.name}
-                </Text>
+                {editingName[item.id] !== undefined ? (
+                  <TextInput
+                    className="flex-1 bg-gray-100 border border-gray-200 rounded-xl py-1 px-2 text-gray-700 ml-3"
+                    value={editingName[item.id]}
+                    onChangeText={t => setEditingName(prev => ({ ...prev, [item.id]: t }))}
+                  />
+                ) : (
+                  <Text className="text-lg font-semibold text-gray-800 ml-3">
+                    {item.name}
+                  </Text>
+                )}
               </View>
-              <Pressable
-                onPress={() => confirmarDeleteMarca(item.id)}
-                className="bg-red-500 rounded-full p-3"
-              >
-                <Icon name="trash" size={16} color="#FFF" />
-              </Pressable>
+              <View className="flex-row">
+                {editingName[item.id] !== undefined ? (
+                  <Pressable
+                    onPress={() => confirmEdit(item.id)}
+                    className="bg-green-500 rounded-full p-3 mr-2"
+                  >
+                    <Icon name="check" size={16} color="#FFF" />
+                  </Pressable>
+                ) : (
+                  <Pressable
+                    onPress={() => startEdit(item.id, item.name)}
+                    className="bg-yellow-500 rounded-full p-3 mr-2"
+                  >
+                    <Icon name="pencil" size={16} color="#FFF" />
+                  </Pressable>
+                )}
+                <Pressable
+                  onPress={() => confirmarDeleteMarca(item.id)}
+                  className="bg-red-500 rounded-full p-3"
+                >
+                  <Icon name="trash" size={16} color="#FFF" />
+                </Pressable>
+              </View>
             </View>
 
-            {/* Input de preço + botões de confirmar e excluir */}
+            {/* Input de preço + botão de confirmar */}
             <View className="flex-row items-center">
               <TextInput
                 className="flex-1 bg-gray-100 border border-gray-200 rounded-xl py-2 px-3 text-gray-700"

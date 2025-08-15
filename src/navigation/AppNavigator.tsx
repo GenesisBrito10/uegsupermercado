@@ -9,9 +9,21 @@ import SupermarketDetailScreen  from '../screens/SupermarketDetailScreen';
 
 export type RootStackParamList = {
   Supermercados: undefined;
-  Produtos:      { supermarketId: number; supermarketName: string; };
-  Marcas:        { supermarketId: number; productId: number; productName: string; };
-  'Visão Geral': { supermarketId: number; supermarketName: string; };
+  Produtos: {
+    supermarketId: number;
+    supermarketName: string;
+    supermarketLocation: string;
+  };
+  Marcas: {
+    supermarketId: number;
+    productId: number;
+    productName: string;
+  };
+  'Visão Geral': {
+    supermarketId: number;
+    supermarketName: string;
+    supermarketLocation: string;
+  };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
