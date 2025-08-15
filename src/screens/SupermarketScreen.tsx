@@ -6,6 +6,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { listSupermercados, addSupermercado, Supermercado } from '../supabase';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import { useNavigation } from '@react-navigation/native';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Supermercados'>;
 
@@ -27,9 +28,21 @@ export default function SupermarketScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50 px-6 pt-4">
-      <Text className="text-3xl font-extrabold text-gray-800 mb-6">
-        🛒 Supermercados
+      <Text className="text-3xl font-extrabold text-gray-800 mb-2">
+        Supermercados
       </Text>
+      <Text className="text-xl font-semibold text-gray-700 mb-4">
+        Lista de estabelecimentos
+      </Text>
+
+      {/* Botão de voltar para o menu */}
+      <Pressable
+        className="bg-blue-500 rounded-full py-3 px-5 mb-6 flex-row items-center justify-center"
+        onPress={() => navigation.navigate('Home' as never)}
+      >
+        <Icon name="arrow-left" size={16} color="#FFFFFF" />
+        <Text className="text-white font-bold ml-2">Voltar ao Menu</Text>
+      </Pressable>
 
       <Pressable className="flex-row mb-6 items-center">
         <TextInput

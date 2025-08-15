@@ -22,15 +22,20 @@ import {
   Marca
 } from '../supabase';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import { useNavigation } from '@react-navigation/native';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Marcas'>;
 
 export default function BrandScreen({ route }: Props) {
+  const navigation = useNavigation();
   const { supermarketId, productId, productName } = route.params;
 
   const [brands, setBrands] = useState<Marca[]>([]);
   const [priceMap, setPriceMap] = useState<Record<number, string>>({});
   const [priceIdMap, setPriceIdMap] = useState<Record<number, number>>({});
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
   const [newBrand, setNewBrand] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -93,23 +98,67 @@ export default function BrandScreen({ route }: Props) {
   }
 
   const handlePriceChange = (brandId: number, text: string) => {
-    setPriceMap(prev => ({ ...prev, [brandId]: text }));
+    // Substitui vírgula por ponto para garantir compatibilidade com parseFloat
+    const sanitizedText = text.replace(',', '.');
+    
+    // Validação para permitir apenas números e um único ponto decimal
+    if (sanitizedText === '' || /^\d*\.?\d*$/.test(sanitizedText)) {
+      setPriceMap(prev => ({ ...prev, [brandId]: sanitizedText }));
+      
+      // Cancel previous timeout
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
+      
+      // Set a new timeout to auto-save after 1000ms of inactivity
+      const timeout = setTimeout(() => {
+        // Only proceed if the value is a valid number
+        const value = parseFloat(sanitizedText);
+        if (!isNaN(value)) {
+          autoSavePrice(brandId, value);
+        }
+      }, 1000);
+      
+      setDebounceTimeout(timeout);
+    }
   };
 
-  const handleConfirm = async (brandId: number) => {
+  const autoSavePrice = async (brandId: number, value: number) => {
+    // Prevent multiple simultaneous updates
+    if (isUpdating) return;
+    
+    try {
+      setIsUpdating(true);
+      setUpdatingId(brandId);
+      
+      if (priceIdMap[brandId]) {
+        await updatePreco(priceIdMap[brandId], value);
+        // Update quietly without alerts
+      } else {
+        await addPreco(supermarketId, productId, brandId, value);
+        // Show alert only on first save
+        Alert.alert('✅ Preço cadastrado!');
+      }
+      await loadData();
+    } catch (error) {
+      console.error('Erro ao salvar preço:', error);
+      Alert.alert('Erro ao salvar preço');
+    } finally {
+      setIsUpdating(false);
+      setUpdatingId(null);
+    }
+  };
+
+  // We don't need handleConfirm anymore as prices are saved automatically
+  // But we'll keep a modified version for manual confirmation if needed
+  const handleManualConfirm = async (brandId: number) => {
     const text = priceMap[brandId];
     const value = parseFloat(text);
     if (isNaN(value)) {
       return Alert.alert('Preço inválido');
     }
-    if (priceIdMap[brandId]) {
-      await updatePreco(priceIdMap[brandId], value);
-      Alert.alert('✅ Preço atualizado!');
-    } else {
-      await addPreco(supermarketId, productId, brandId, value);
-      Alert.alert('✅ Preço cadastrado!');
-    }
-    await loadData();
+    
+    autoSavePrice(brandId, value);
   };
 
   if (loading) {
@@ -129,6 +178,25 @@ export default function BrandScreen({ route }: Props) {
       <Text className="text-xl font-semibold text-gray-700 mb-4">
         Marcas & Preços
       </Text>
+
+      {/* Botões de navegação */}
+      <View className="flex-row mb-6">
+        <Pressable
+          onPress={() => navigation.goBack()}
+          className="bg-gray-500 rounded-full py-3 px-5 mr-2 flex-1 flex-row items-center justify-center"
+        >
+          <Icon name="arrow-left" size={16} color="#FFFFFF" />
+          <Text className="text-white font-bold ml-2">Voltar</Text>
+        </Pressable>
+        
+        <Pressable
+          onPress={() => navigation.navigate('Home' as never)}
+          className="bg-blue-500 rounded-full py-3 px-5 flex-1 flex-row items-center justify-center"
+        >
+          <Icon name="home" size={16} color="#FFFFFF" />
+          <Text className="text-white font-bold ml-2">Menu Principal</Text>
+        </Pressable>
+      </View>
 
       {/* Input de nova marca + botão de adicionar */}
       <View className="flex-row mb-6 items-center">
@@ -170,22 +238,28 @@ export default function BrandScreen({ route }: Props) {
               </Pressable>
             </View>
 
-            {/* Input de preço + botões de confirmar e excluir */}
+            {/* Input de preço com indicador de salvamento automático */}
             <View className="flex-row items-center">
-              <TextInput
-                className="flex-1 bg-gray-100 border border-gray-200 rounded-xl py-2 px-3 text-gray-700"
-                placeholder="Preço (ex: 12.50)"
-                placeholderTextColor="#A0A0A0"
-                keyboardType="numeric"
-                value={priceMap[item.id] || ''}
-                onChangeText={text => handlePriceChange(item.id, text)}
-              />
-              <Pressable
-                onPress={() => handleConfirm(item.id)}
-                className="ml-3 bg-green-500 rounded-full p-3 shadow-md"
-              >
-                <Icon name="check" size={16} color="#FFF" />
-              </Pressable>
+              <View className="flex-1 relative">
+                <TextInput
+                  className="flex-1 bg-gray-100 border border-gray-200 rounded-xl py-2 px-3 text-gray-700"
+                  placeholder="Preço (ex: 12.50)"
+                  placeholderTextColor="#A0A0A0"
+                  keyboardType="decimal-pad"
+                  value={priceMap[item.id] || ''}
+                  onChangeText={text => handlePriceChange(item.id, text)}
+                />
+                {updatingId === item.id && (
+                  <View className="absolute right-3 top-2">
+                    <ActivityIndicator size="small" color="#4A90E2" />
+                  </View>
+                )}
+              </View>
+              {parseFloat(priceMap[item.id] || '0') > 0 && (
+                <Text className="ml-2 text-green-600">
+                  <Icon name="check" size={16} />
+                </Text>
+              )}
             </View>
           </View>
         )}
