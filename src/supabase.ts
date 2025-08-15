@@ -8,8 +8,18 @@ const SUPABASE_ANON_KEY =  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXB
 export const supabase = createClient(supabaseUrl, SUPABASE_ANON_KEY);
 
 // Modelos TS
-export interface Supermercado { id: number; name: string; }
-export interface Produto     { id: number; name: string; supermercado: number; }
+export interface Supermercado {
+  id: number;
+  name: string;
+  location?: string;
+}
+
+export interface Produto {
+  id: number;
+  name: string;
+  type?: string;
+  supermercado: number;
+}
 export interface Marca        { id: number; name: string; produto: number; }
 export interface Preco        {
   id: number;
@@ -26,38 +36,63 @@ export interface PrecoDetail {
   produto: number;
   marca: number;
   created_at: string;
-  produtos: { name: string }[];  // nome do produto
-  marcas:   { name: string }[];  // nome da marca
+  produtos: { name: string; type?: string }[];  // nome e tipo do produto
+  marcas:   { name: string }[];                // nome da marca
 }
 
 // CRUD
 export async function listSupermercados(): Promise<Supermercado[]> {
   const { data, error } = await supabase
-    .from("supermercados")
-    .select("*");
-  if (error) throw error;
-  return data;
+    .from('supermercados')
+    .select('id, name, location');
+  if (error) {
+    // Se a coluna `location` não existir, faz uma segunda consulta sem ela
+    const fallback = await supabase
+      .from('supermercados')
+      .select('id, name');
+    if (fallback.error) throw fallback.error;
+    return (fallback.data || []).map(s => ({ ...s, location: '' }));
+  }
+  return (data || []).map(s => ({ ...s, location: s.location ?? '' }));
 }
-export async function addSupermercado(name: string) {
+export async function addSupermercado(name: string, location?: string) {
   const { error } = await supabase
-    .from("supermercados")
-    .insert([{ name }]);
-  if (error) throw error;
+    .from('supermercados')
+    .insert([{ name, location: location ?? '' }]);
+  if (error) {
+    // Tenta novamente sem a coluna `location`
+    const fallback = await supabase
+      .from('supermercados')
+      .insert([{ name }]);
+    if (fallback.error) throw fallback.error;
+  }
 }
 
 export async function listProdutos(superId: number): Promise<Produto[]> {
   const { data, error } = await supabase
-    .from("produtos")
-    .select("*")
-    .eq("supermercado", superId);
-  if (error) throw error;
-  return data;
+    .from('produtos')
+    .select('id, name, type, supermercado')
+    .eq('supermercado', superId);
+  if (error) {
+    const fallback = await supabase
+      .from('produtos')
+      .select('id, name, supermercado')
+      .eq('supermercado', superId);
+    if (fallback.error) throw fallback.error;
+    return (fallback.data || []).map(p => ({ ...p, type: '' }));
+  }
+  return (data || []).map(p => ({ ...p, type: p.type ?? '' }));
 }
-export async function addProduto(name: string, supermercado: number) {
+export async function addProduto(name: string, supermercado: number, type?: string) {
   const { error } = await supabase
-    .from("produtos")
-    .insert([{ name, supermercado }]);
-  if (error) throw error;
+    .from('produtos')
+    .insert([{ name, supermercado, type: type ?? '' }]);
+  if (error) {
+    const fallback = await supabase
+      .from('produtos')
+      .insert([{ name, supermercado }]);
+    if (fallback.error) throw fallback.error;
+  }
 }
 
 export async function listMarcas(prodId: number): Promise<Marca[]> {
@@ -70,8 +105,16 @@ export async function listMarcas(prodId: number): Promise<Marca[]> {
 }
 export async function addMarca(name: string, produto: number) {
   const { error } = await supabase
-    .from("marcas")
+    .from('marcas')
     .insert([{ name, produto }]);
+  if (error) throw error;
+}
+
+export async function updateMarca(id: number, newName: string) {
+  const { error } = await supabase
+    .from('marcas')
+    .update({ name: newName })
+    .eq('id', id);
   if (error) throw error;
 }
 
@@ -99,9 +142,16 @@ export async function listPrecos(): Promise<Preco[]> {
 export async function listPrecosPorSuper(supermercado: number): Promise<PrecoDetail[]> {
   const { data, error } = await supabase
     .from('precos')
-    .select('id, price, produto, marca, created_at, produtos(name), marcas(name)')
+    .select('id, price, produto, marca, created_at, produtos(name, type), marcas(name)')
     .eq('supermercado', supermercado);
-    if (error) throw error;
+  if (error) {
+    const fallback = await supabase
+      .from('precos')
+      .select('id, price, produto, marca, created_at, produtos(name), marcas(name)')
+      .eq('supermercado', supermercado);
+    if (fallback.error) throw fallback.error;
+    return fallback.data as PrecoDetail[];
+  }
   return data;
 }
 
