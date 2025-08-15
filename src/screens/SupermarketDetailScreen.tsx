@@ -16,10 +16,11 @@ interface SectionData {
 }
 
 export default function SupermarketDetailScreen({ route }: Props) {
-  const { supermarketId, supermarketName } = route.params;
+  const { supermarketId, supermarketName, supermarketLocation } = route.params;
   const [sections, setSections] = useState<SectionData[]>([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [basketValue, setBasketValue] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -35,6 +36,40 @@ export default function SupermarketDetailScreen({ route }: Props) {
           return acc;
         }, []);
         setSections(grouped);
+
+        // Calcula cesta básica
+        const map = new Map<number, { type?: string; prices: number[] }>();
+        all.forEach(item => {
+          const current = map.get(item.produto) || { type: item.produtos.type, prices: [] };
+          current.prices.push(item.price);
+          current.type = item.produtos.type;
+          map.set(item.produto, current);
+        });
+        const quantities: Record<string, number> = {
+          'Carne': 6,
+          'Leite': 7.5,
+          'Feijão': 4.5,
+          'Arroz': 1,
+          'Farinha': 1.5,
+          'Batata': 6,
+          'Tomate': 9,
+          'Pão': 6,
+          'Café': 1.2,
+          'Banana': 6.3,
+          'Açúcar': 1,
+          'Óleo': 750,
+          'Manteiga': 750,
+        };
+        let total = 0;
+        map.forEach(({ type, prices }) => {
+          if (!type) return;
+          const qty = quantities[type];
+          if (qty) {
+            const avg = prices.reduce((a, b) => a + b, 0) / prices.length;
+            total += avg * qty;
+          }
+        });
+        setBasketValue(total);
       } catch (err) {
         console.error(err);
         Alert.alert('Erro ao carregar dados');
@@ -71,12 +106,14 @@ export default function SupermarketDetailScreen({ route }: Props) {
   return (
     <SafeAreaView className="flex-1 bg-gray-50 px-6 pt-4">
       {/* Header do supermercado */}
-      <View className="bg-white p-4 rounded-2xl mb-4 shadow-md flex-row justify-between items-center">
-        <View>
+      <View className="bg-white p-4 rounded-2xl mb-4 shadow-md">
+        <View className="flex-row justify-between items-center mb-2">
           <Text className="text-2xl font-bold text-gray-800">{supermarketName}</Text>
-          <Text className="text-sm text-gray-500">{sections.length} produtos</Text>
+          <Icon name="shopping-basket" size={32} color="#4A90E2" />
         </View>
-        <Icon name="shopping-basket" size={32} color="#4A90E2" />
+        <Text className="text-sm text-gray-500">Localização: {supermarketLocation}</Text>
+        <Text className="text-sm text-gray-500">Cesta básica: R$ {basketValue.toFixed(2)}</Text>
+        <Text className="text-sm text-gray-500">{sections.length} produtos</Text>
       </View>
 
       {/* Botão Exportar CSV */}
