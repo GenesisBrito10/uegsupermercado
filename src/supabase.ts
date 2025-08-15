@@ -1,9 +1,9 @@
-import "react-native-url-polyfill"
+import "react-native-url-polyfill";
 import { createClient } from "@supabase/supabase-js";
 
-
 const supabaseUrl = "https://eyrpsaurzqydtnisfyul.supabase.co";
-const SUPABASE_ANON_KEY =  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5cnBzYXVyenF5ZHRuaXNmeXVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU2ODgzOTgsImV4cCI6MjA2MTI2NDM5OH0.UxJ1ZBPV8_QeEQMCkLfbpbgPJOd_B9yTnyRr8AAEquo";
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5cnBzYXVyenF5ZHRuaXNmeXVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU2ODgzOTgsImV4cCI6MjA2MTI2NDM5OH0.UxJ1ZBPV8_QeEQMCkLfbpbgPJOd_B9yTnyRr8AAEquo";
 
 export const supabase = createClient(supabaseUrl, SUPABASE_ANON_KEY);
 
@@ -20,8 +20,14 @@ export interface Produto {
   type?: string;
   supermercado: number;
 }
-export interface Marca        { id: number; name: string; produto: number; }
-export interface Preco        {
+
+export interface Marca {
+  id: number;
+  name: string;
+  produto: number;
+}
+
+export interface Preco {
   id: number;
   supermercado: number;
   produto: number;
@@ -36,60 +42,60 @@ export interface PrecoDetail {
   produto: number;
   marca: number;
   created_at: string;
-  produtos: { name: string; type?: string }[];  // nome e tipo do produto
-  marcas:   { name: string }[];                // nome da marca
+  produtos: { name: string; type?: string }[];
+  marcas: { name: string }[];
 }
 
 // CRUD
 export async function listSupermercados(): Promise<Supermercado[]> {
   const { data, error } = await supabase
-    .from('supermercados')
-    .select('id, name, location');
+    .from("supermercados")
+    .select("id, name, location");
   if (error) {
-    // Se a coluna `location` não existir, faz uma segunda consulta sem ela
-    const fallback = await supabase
-      .from('supermercados')
-      .select('id, name');
+    const fallback = await supabase.from("supermercados").select("id, name");
     if (fallback.error) throw fallback.error;
-    return (fallback.data || []).map(s => ({ ...s, location: '' }));
+    return (fallback.data || []).map((s) => ({ ...s, location: "" }));
   }
-  return (data || []).map(s => ({ ...s, location: s.location ?? '' }));
+  return (data || []).map((s) => ({ ...s, location: s.location ?? "" }));
 }
+
 export async function addSupermercado(name: string, location?: string) {
   const { error } = await supabase
-    .from('supermercados')
-    .insert([{ name, location: location ?? '' }]);
+    .from("supermercados")
+    .insert([{ name, location: location ?? "" }]);
   if (error) {
-    // Tenta novamente sem a coluna `location`
-    const fallback = await supabase
-      .from('supermercados')
-      .insert([{ name }]);
+    const fallback = await supabase.from("supermercados").insert([{ name }]);
     if (fallback.error) throw fallback.error;
   }
 }
 
 export async function listProdutos(superId: number): Promise<Produto[]> {
   const { data, error } = await supabase
-    .from('produtos')
-    .select('id, name, type, supermercado')
-    .eq('supermercado', superId);
+    .from("produtos")
+    .select("id, name, type, supermercado")
+    .eq("supermercado", superId);
   if (error) {
     const fallback = await supabase
-      .from('produtos')
-      .select('id, name, supermercado')
-      .eq('supermercado', superId);
+      .from("produtos")
+      .select("id, name, supermercado")
+      .eq("supermercado", superId);
     if (fallback.error) throw fallback.error;
-    return (fallback.data || []).map(p => ({ ...p, type: '' }));
+    return (fallback.data || []).map((p) => ({ ...p, type: "" }));
   }
-  return (data || []).map(p => ({ ...p, type: p.type ?? '' }));
+  return (data || []).map((p) => ({ ...p, type: p.type ?? "" }));
 }
-export async function addProduto(name: string, supermercado: number, type?: string) {
+
+export async function addProduto(
+  name: string,
+  supermercado: number,
+  type?: string
+) {
   const { error } = await supabase
-    .from('produtos')
-    .insert([{ name, supermercado, type: type ?? '' }]);
+    .from("produtos")
+    .insert([{ name, supermercado, type: type ?? "" }]);
   if (error) {
     const fallback = await supabase
-      .from('produtos')
+      .from("produtos")
       .insert([{ name, supermercado }]);
     if (fallback.error) throw fallback.error;
   }
@@ -103,18 +109,19 @@ export async function listMarcas(prodId: number): Promise<Marca[]> {
   if (error) throw error;
   return data;
 }
+
 export async function addMarca(name: string, produto: number) {
   const { error } = await supabase
-    .from('marcas')
+    .from("marcas")
     .insert([{ name, produto }]);
   if (error) throw error;
 }
 
 export async function updateMarca(id: number, newName: string) {
   const { error } = await supabase
-    .from('marcas')
+    .from("marcas")
     .update({ name: newName })
-    .eq('id', id);
+    .eq("id", id);
   if (error) throw error;
 }
 
@@ -129,6 +136,7 @@ export async function addPreco(
     .insert([{ supermercado, produto, marca, price }]);
   if (error) throw error;
 }
+
 export async function listPrecos(): Promise<Preco[]> {
   const { data, error } = await supabase
     .from("precos")
@@ -138,17 +146,22 @@ export async function listPrecos(): Promise<Preco[]> {
   return data;
 }
 
-
-export async function listPrecosPorSuper(supermercado: number): Promise<PrecoDetail[]> {
+export async function listPrecosPorSuper(
+  supermercado: number
+): Promise<PrecoDetail[]> {
   const { data, error } = await supabase
-    .from('precos')
-    .select('id, price, produto, marca, created_at, produtos(name, type), marcas(name)')
-    .eq('supermercado', supermercado);
+    .from("precos")
+    .select(
+      "id, price, produto, marca, created_at, produtos(name, type), marcas(name)"
+    )
+    .eq("supermercado", supermercado);
   if (error) {
     const fallback = await supabase
-      .from('precos')
-      .select('id, price, produto, marca, created_at, produtos(name), marcas(name)')
-      .eq('supermercado', supermercado);
+      .from("precos")
+      .select(
+        "id, price, produto, marca, created_at, produtos(name), marcas(name)"
+      )
+      .eq("supermercado", supermercado);
     if (fallback.error) throw fallback.error;
     return fallback.data as PrecoDetail[];
   }
@@ -160,35 +173,29 @@ export async function listPrecosProduto(
   produto: number
 ): Promise<Preco[]> {
   const { data, error } = await supabase
-    .from('precos')
-    .select('*')
-    .eq('supermercado', supermercado)
-    .eq('produto', produto)
-    .order('created_at', { ascending: false });
+    .from("precos")
+    .select("*")
+    .eq("supermercado", supermercado)
+    .eq("produto", produto)
+    .order("created_at", { ascending: false });
   if (error) throw error;
   return data;
 }
 
 export async function updatePreco(id: number, newPrice: number) {
   const { error } = await supabase
-    .from('precos')
+    .from("precos")
     .update({ price: newPrice })
-    .eq('id', id);
+    .eq("id", id);
   if (error) throw error;
 }
 
 export async function deleteProduto(id: number) {
-  const { error } = await supabase
-    .from('produtos')
-    .delete()
-    .eq('id', id);
+  const { error } = await supabase.from("produtos").delete().eq("id", id);
   if (error) throw error;
 }
 
 export async function deleteMarca(id: number) {
-  const { error } = await supabase
-    .from('marcas')
-    .delete()
-    .eq('id', id);
+  const { error } = await supabase.from("marcas").delete().eq("id", id);
   if (error) throw error;
 }
