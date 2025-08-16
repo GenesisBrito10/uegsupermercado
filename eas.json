@@ -3,19 +3,11 @@
     "preview": {
       "android": {
         "buildType": "apk"
-      },
-      "ios": {
-        "simulator": false,
-        "distribution": "internal"
       }
     },
     "preview2": {
       "android": {
         "gradleCommand": ":app:assembleRelease"
-      },
-      "ios": {
-        "simulator": false,
-        "distribution": "internal"
       }
     },
     "preview3": {
@@ -24,11 +16,6 @@
     "preview4": {
       "distribution": "internal"
     },
-    "production": {
-      "android": {},
-      "ios": {
-        "simulator": false
-      }
-    }
+    "production": {}
   }
 }

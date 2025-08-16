@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "nepe-coletor",
-    "slug": "nepe-coletor",
+    "name": "NepeColetor",
+    "slug": "NepeColetor",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
@@ -16,7 +16,8 @@
         "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.gbrito10.nepecoletor"
     },
     "web": {
       "bundler": "metro",
@@ -28,6 +29,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e70b04f8-d850-48ea-b8fe-43c9e597e147"
+      }
     }
   }
 }
