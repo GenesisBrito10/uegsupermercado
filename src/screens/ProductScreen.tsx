@@ -1,26 +1,11 @@
-// src/screens/ProductScreen.tsx
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    FlatList,
-    Pressable,
-    Text,
-    TextInput,
-    View,
-    Alert,
-    Modal,
-    ScrollView,
+    ActivityIndicator, FlatList, Pressable, Text, TextInput, View, Alert, Modal, ScrollView, StyleSheet, TouchableWithoutFeedback
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import {
-    listProdutos,
-    addProduto,
-    deleteProduto,
-    updateProduto,
-    Produto,
-} from '../supabase';
+import { listProdutos, addProduto, deleteProduto, updateProduto, Produto } from '../supabase';
 import { RootStackParamList } from '../navigation/AppNavigator';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Produtos'>;
@@ -38,19 +23,8 @@ export default function ProductScreen({ route, navigation }: Props) {
     const [editModalVisible, setEditModalVisible] = useState(false);
 
     const tiposProdutos = [
-        'Carne',
-        'Leite',
-        'Feijão',
-        'Arroz',
-        'Farinha',
-        'Batata',
-        'Tomate',
-        'Pão',
-        'Café',
-        'Banana',
-        'Açúcar',
-        'Óleo',
-        'Manteiga',
+        'Carne', 'Leite', 'Feijão', 'Arroz', 'Farinha', 'Batata',
+        'Tomate', 'Pão', 'Café', 'Banana', 'Açúcar', 'Óleo', 'Manteiga',
     ];
 
     async function load() {
@@ -62,10 +36,7 @@ export default function ProductScreen({ route, navigation }: Props) {
             setLoading(false);
         }
     }
-
-    useEffect(() => {
-        load();
-    }, []);
+    useEffect(() => { load(); }, []);
 
     async function criar() {
         if (!novo.trim()) return;
@@ -76,26 +47,16 @@ export default function ProductScreen({ route, navigation }: Props) {
     }
 
     function confirmarDelete(id: number) {
-        Alert.alert(
-            'Excluir produto',
-            'Tem certeza que deseja excluir este produto?',
-            [
-                { text: 'Cancelar', style: 'cancel' },
-                {
-                    text: 'Excluir',
-                    style: 'destructive',
-                    onPress: async () => {
-                        try {
-                            await deleteProduto(id);
-                            Alert.alert('✅ Produto excluído');
-                            load();
-                        } catch {
-                            Alert.alert('Erro ao excluir');
-                        }
-                    },
+        Alert.alert('Excluir produto', 'Tem certeza que deseja excluir?', [
+            { text: 'Cancelar', style: 'cancel' },
+            {
+                text: 'Excluir', style: 'destructive',
+                onPress: async () => {
+                    await deleteProduto(id);
+                    load();
                 },
-            ]
-        );
+            },
+        ]);
     }
 
     async function salvarEdicao(id: number) {
@@ -112,245 +73,143 @@ export default function ProductScreen({ route, navigation }: Props) {
         setEditValue(item.name);
         setEditTipo(item.type || null);
     }
-
+    
     function cancelarEdicao() {
         setEditId(null);
         setEditValue('');
         setEditTipo(null);
     }
 
-    return (
-        <SafeAreaView className="flex-1 bg-gray-50 px-6 pt-4">
-            <Text className="text-3xl font-extrabold text-gray-800 mb-2">
-                🏬 {supermarketName}
-            </Text>
-            <Text className="text-xl font-semibold text-gray-700 mb-4">
-                Produtos
-            </Text>
+    const closeModals = () => {
+        setModalVisible(false);
+        setEditModalVisible(false);
+    }
 
-            {/* Botões de navegação */}
-            <View className="flex-row mb-6">
-                <Pressable
-                    onPress={() => navigation.goBack()}
-                    className="bg-gray-500 rounded-full py-3 px-5 mr-2 flex-1 flex-row items-center justify-center"
-                >
-                    <Icon name="arrow-left" size={16} color="#FFFFFF" />
-                    <Text className="text-white font-bold ml-2">Voltar</Text>
+    return (
+        <SafeAreaView style={styles.container}>
+            <View style={styles.header}>
+                <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+                    <Icon name="arrow-left" size={16} color="#374151" />
                 </Pressable>
-                
-                <Pressable
-                    onPress={() => navigation.navigate('Home')}
-                    className="bg-blue-500 rounded-full py-3 px-5 flex-1 flex-row items-center justify-center"
-                >
-                    <Icon name="home" size={16} color="#FFFFFF" />
-                    <Text className="text-white font-bold ml-2">Menu Principal</Text>
-                </Pressable>
+                <View>
+                    <Text style={styles.supermarketTitle}>{supermarketName}</Text>
+                    <Text style={styles.title}>Produtos</Text>
+                </View>
             </View>
 
-            {/* Input + tipo + botão adicionar */}
-            <View className="mb-6">
-                <View className="flex-row items-center mb-2">
-                    <TextInput
-                        className="flex-1 bg-white border border-gray-200 rounded-2xl py-3 px-4 text-gray-700 shadow-sm"
-                        placeholder="Novo produto..."
-                        placeholderTextColor="#A0A0A0"
-                        value={novo}
-                        onChangeText={setNovo}
-                    />
-                    <Pressable
-                        onPress={criar}
-                        className="ml-3 bg-blue-600 rounded-full p-3 shadow-md"
-                    >
-                        <Icon name="plus" size={18} color="#FFF" />
-                    </Pressable>
-                </View>
-                
+            <View style={styles.inputSection}>
+                <TextInput
+                    style={styles.textInput}
+                    placeholder="Nome do novo produto"
+                    placeholderTextColor="#9CA3AF"
+                    value={novo}
+                    onChangeText={setNovo}
+                />
                 <Pressable 
                     onPress={() => setModalVisible(true)}
-                    className="bg-white border border-gray-200 rounded-2xl py-3 px-4 shadow-sm flex-row items-center justify-between"
+                    style={styles.typeSelector}
                 >
-                    <Text className={tipoSelecionado ? "text-gray-700" : "text-gray-400"}>
-                        {tipoSelecionado || "Selecione o tipo do produto"}
+                    <Text style={tipoSelecionado ? styles.typeSelectedText : styles.typePlaceholderText}>
+                        {tipoSelecionado || "Selecione o tipo"}
                     </Text>
-                    <Icon name="chevron-down" size={14} color="#666" />
+                    <Icon name="chevron-down" size={14} color="#6B7280" />
+                </Pressable>
+                 <Pressable
+                    onPress={criar}
+                    style={styles.addButton}
+                    disabled={!novo.trim()}
+                >
+                    <Text style={styles.addButtonText}>Adicionar</Text>
                 </Pressable>
             </View>
 
-            {/* Modal para seleção de tipo */}
             <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modalVisible}
-                onRequestClose={() => setModalVisible(false)}
+                animationType="slide" transparent={true} visible={modalVisible || editModalVisible}
+                onRequestClose={closeModals}
             >
-                <View className="flex-1 justify-end bg-black/50">
-                    <View className="bg-white rounded-t-3xl p-5 h-1/2">
-                        <View className="flex-row justify-between items-center mb-4">
-                            <Text className="text-xl font-bold text-gray-800">Selecione o tipo</Text>
-                            <Pressable onPress={() => setModalVisible(false)}>
-                                <Icon name="times" size={20} color="#666" />
-                            </Pressable>
-                        </View>
-                        <ScrollView>
-                            {tiposProdutos.map((tipo) => (
-                                <Pressable
-                                    key={tipo}
-                                    className={`p-4 border-b border-gray-100 flex-row justify-between items-center ${
-                                        tipoSelecionado === tipo ? "bg-blue-50" : ""
-                                    }`}
-                                    onPress={() => {
-                                        setTipoSelecionado(tipo);
-                                        setModalVisible(false);
-                                    }}
-                                >
-                                    <Text className="text-lg text-gray-700">{tipo}</Text>
-                                    {tipoSelecionado === tipo && (
-                                        <Icon name="check" size={18} color="#4A90E2" />
-                                    )}
-                                </Pressable>
-                            ))}
-                        </ScrollView>
+                <TouchableWithoutFeedback onPress={closeModals}>
+                    <View style={styles.modalContainer}>
+                        <TouchableWithoutFeedback>
+                            <View style={styles.modalContent}>
+                                <Text style={styles.modalTitle}>Selecione o tipo</Text>
+                                <ScrollView>
+                                    {tiposProdutos.map((tipo) => (
+                                        <Pressable
+                                            key={tipo}
+                                            style={[styles.modalItem, ((editModalVisible ? editTipo : tipoSelecionado) === tipo) && styles.modalItemSelected]}
+                                            onPress={() => {
+                                                if (editModalVisible) {
+                                                    setEditTipo(tipo);
+                                                    setEditModalVisible(false);
+                                                } else {
+                                                    setTipoSelecionado(tipo);
+                                                    setModalVisible(false);
+                                                }
+                                            }}
+                                        >
+                                            <Text style={styles.modalItemText}>{tipo}</Text>
+                                        </Pressable>
+                                    ))}
+                                </ScrollView>
+                            </View>
+                        </TouchableWithoutFeedback>
                     </View>
-                </View>
+                </TouchableWithoutFeedback>
             </Modal>
-
-            {/* Modal para seleção de tipo na edição */}
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={editModalVisible}
-                onRequestClose={() => setEditModalVisible(false)}
-            >
-                <View className="flex-1 justify-end bg-black/50">
-                    <View className="bg-white rounded-t-3xl p-5 h-1/2">
-                        <View className="flex-row justify-between items-center mb-4">
-                            <Text className="text-xl font-bold text-gray-800">Editar tipo</Text>
-                            <Pressable onPress={() => setEditModalVisible(false)}>
-                                <Icon name="times" size={20} color="#666" />
-                            </Pressable>
-                        </View>
-                        <ScrollView>
-                            {tiposProdutos.map((tipo) => (
-                                <Pressable
-                                    key={tipo}
-                                    className={`p-4 border-b border-gray-100 flex-row justify-between items-center ${
-                                        editTipo === tipo ? "bg-blue-50" : ""
-                                    }`}
-                                    onPress={() => {
-                                        setEditTipo(tipo);
-                                        setEditModalVisible(false);
-                                    }}
-                                >
-                                    <Text className="text-lg text-gray-700">{tipo}</Text>
-                                    {editTipo === tipo && (
-                                        <Icon name="check" size={18} color="#4A90E2" />
-                                    )}
-                                </Pressable>
-                            ))}
-                        </ScrollView>
-                    </View>
-                </View>
-            </Modal>
-
-            <Pressable
-                onPress={() =>
-                    navigation.navigate('Visão Geral', {
-                        supermarketId,
-                        supermarketName,
-                    })
-                }
-                className="bg-blue-500 rounded-full p-3 mb-4 shadow-md"
-            >
-                <Text className="text-white text-center font-semibold">Visão Geral</Text>
-            </Pressable>
-
-            {/* Lista de produtos */}
+            
             {loading ? (
-                <ActivityIndicator size="large" color="#4A90E2" />
+                <ActivityIndicator size="large" color="#3B82F6" />
             ) : (
                 <FlatList
                     data={list}
                     keyExtractor={(item) => item.id.toString()}
                     showsVerticalScrollIndicator={false}
                     renderItem={({ item }) => (
-                        <View className="bg-white p-4 rounded-2xl mb-4 shadow-md">
+                        <View style={styles.productCard}>
                             {editId === item.id ? (
-                                // Modo de edição - Layout melhorado
                                 <View>
-                                    <View className="mb-3">
-                                        <Text className="text-xs text-gray-500 mb-1">Nome do produto</Text>
-                                        <TextInput
-                                            value={editValue}
-                                            onChangeText={setEditValue}
-                                            className="border border-gray-300 rounded-lg p-2 text-gray-700"
-                                            autoFocus
-                                        />
-                                    </View>
-                                    
+                                    <TextInput
+                                        value={editValue}
+                                        onChangeText={setEditValue}
+                                        style={[styles.textInput, { marginBottom: 12 }]}
+                                        autoFocus
+                                    />
                                     <Pressable 
                                         onPress={() => setEditModalVisible(true)}
-                                        className="mb-4 border border-gray-300 rounded-lg p-3 flex-row justify-between items-center"
+                                        style={[styles.typeSelector, { marginBottom: 16 }]}
                                     >
-                                        <Text className={editTipo ? "text-gray-700" : "text-gray-400"}>
-                                            {editTipo || "Selecione o tipo do produto"}
+                                        <Text style={editTipo ? styles.typeSelectedText : styles.typePlaceholderText}>
+                                            {editTipo || "Selecione o tipo"}
                                         </Text>
-                                        <Icon name="chevron-down" size={14} color="#666" />
+                                        <Icon name="chevron-down" size={14} color="#6B7280" />
                                     </Pressable>
-                                    
-                                    <View className="flex-row justify-end">
-                                        <Pressable
-                                            onPress={cancelarEdicao}
-                                            className="bg-gray-300 rounded-full px-4 py-2 mr-2"
-                                        >
-                                            <Text className="text-gray-700">Cancelar</Text>
+                                    <View style={styles.editActions}>
+                                        <Pressable onPress={cancelarEdicao} style={[styles.editButton, styles.cancelButton]}>
+                                            <Text style={styles.cancelButtonText}>Cancelar</Text>
                                         </Pressable>
-                                        <Pressable
-                                            onPress={() => salvarEdicao(item.id)}
-                                            className="bg-green-500 rounded-full px-4 py-2"
-                                        >
-                                            <Text className="text-white">Salvar</Text>
+                                        <Pressable onPress={() => salvarEdicao(item.id)} style={[styles.editButton, styles.saveButton]}>
+                                            <Text style={styles.saveButtonText}>Salvar</Text>
                                         </Pressable>
                                     </View>
                                 </View>
                             ) : (
-                                // Modo de visualização
                                 <Pressable
-                                    onPress={() =>
-                                        navigation.navigate('Marcas', {
-                                            supermarketId,
-                                            productId: item.id,
-                                            productName: item.name,
-                                        })
-                                    }
+                                    style={styles.productContent}
+                                    onPress={() => navigation.navigate('Marcas', { supermarketId, productId: item.id, productName: item.name })}
                                 >
-                                    <View className="flex-row items-center justify-between">
-                                        <View className="flex-row items-center flex-1">
-                                            <Icon name="cube" size={20} color="#4A90E2" />
-                                            <View className="ml-3 flex-1">
-                                                <Text className="text-lg font-semibold text-gray-800">
-                                                    {item.name}
-                                                </Text>
-                                                {item.type && (
-                                                    <Text className="text-xs text-gray-500">
-                                                        Tipo: {item.type}
-                                                    </Text>
-                                                )}
-                                            </View>
-                                        </View>
-                                        <View className="flex-row">
-                                            <Pressable
-                                                onPress={() => iniciarEdicao(item)}
-                                                className="bg-yellow-500 rounded-full p-3 mr-2"
-                                            >
-                                                <Icon name="pencil" size={16} color="#FFF" />
-                                            </Pressable>
-                                            <Pressable
-                                                onPress={() => confirmarDelete(item.id)}
-                                                className="bg-red-500 rounded-full p-3"
-                                            >
-                                                <Icon name="trash" size={16} color="#FFF" />
-                                            </Pressable>
-                                        </View>
+                                    <View style={styles.productDetails}>
+                                        <Text style={styles.productName}>{item.name}</Text>
+                                        {item.type && (
+                                            <Text style={styles.productType}>{item.type}</Text>
+                                        )}
+                                    </View>
+                                    <View style={styles.productActions}>
+                                        <Pressable onPress={() => iniciarEdicao(item)} style={styles.actionButton}>
+                                            <Icon name="pencil" size={16} color="#4B5563" />
+                                        </Pressable>
+                                        <Pressable onPress={() => confirmarDelete(item.id)} style={styles.actionButton}>
+                                            <Icon name="trash" size={16} color="#EF4444" />
+                                        </Pressable>
                                     </View>
                                 </Pressable>
                             )}
@@ -361,3 +220,37 @@ export default function ProductScreen({ route, navigation }: Props) {
         </SafeAreaView>
     );
 }
+
+const styles = StyleSheet.create({
+    container: { flex: 1, backgroundColor: '#F9FAFB', paddingHorizontal: 20 },
+    header: { flexDirection: 'row', alignItems: 'center', paddingVertical: 16 },
+    backButton: { padding: 10 },
+    supermarketTitle: { fontSize: 14, color: '#6B7280' },
+    title: { fontSize: 22, fontWeight: 'bold', color: '#111827' },
+    inputSection: { gap: 12, marginVertical: 8, marginBottom: 24 },
+    textInput: { backgroundColor: 'white', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, padding: 14, fontSize: 16, color: '#1F2937' },
+    addButton: { backgroundColor: '#3B82F6', paddingVertical: 14, borderRadius: 8, alignItems: 'center' },
+    addButtonText: { color: 'white', fontWeight: '600', fontSize: 16 },
+    typeSelector: { backgroundColor: 'white', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    typeSelectedText: { color: '#1F2937', fontSize: 16 },
+    typePlaceholderText: { color: '#9CA3AF', fontSize: 16 },
+    modalContainer: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'transparent' },
+    modalContent: { backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: '60%', shadowColor: '#000', shadowOffset: { width: 0, height: -2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 5 },
+    modalTitle: { fontSize: 18, fontWeight: 'bold', color: '#111827', marginBottom: 16, textAlign: 'center' },
+    modalItem: { paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
+    modalItemSelected: { backgroundColor: '#EFF6FF' },
+    modalItemText: { fontSize: 16, color: '#374151', textAlign: 'center' },
+    productCard: { backgroundColor: 'white', padding: 16, borderRadius: 8, marginBottom: 12, borderWidth: 1, borderColor: '#E5E7EB' },
+    productContent: { flexDirection: 'row', alignItems: 'center' },
+    productDetails: { flex: 1 },
+    productName: { fontSize: 16, fontWeight: '600', color: '#1F2937' },
+    productType: { fontSize: 12, color: '#6B7280', marginTop: 4, backgroundColor: '#F3F4F6', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 10, alignSelf: 'flex-start', overflow: 'hidden' },
+    productActions: { flexDirection: 'row', gap: 8 },
+    actionButton: { padding: 8 },
+    editActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12, marginTop: 8 },
+    editButton: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
+    cancelButton: { backgroundColor: '#E5E7EB' },
+    cancelButtonText: { color: '#374151', fontWeight: '600' },
+    saveButton: { backgroundColor: '#3B82F6' },
+    saveButtonText: { color: 'white', fontWeight: '600' },
+});

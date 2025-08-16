@@ -16,20 +16,15 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#f9fafb" />
+      <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
       
       <View style={styles.header}>
         <Image
           source={require('../../assets/images/logo.png')}
-          style={{
-            width: 150,
-            height: 150,
-            resizeMode: 'contain',
-            marginBottom: 20,
-          }}
+          style={styles.logo}
         />
-        <Text style={styles.title}>UEG Supermercado</Text>
-        <Text style={styles.subtitle}>Monitoramento de preços</Text>
+        <Text style={styles.title}>NEPE Coletor</Text>
+        <Text style={styles.subtitle}>Monitoramento de Preços da Cesta Básica</Text>
       </View>
       
       <View style={styles.menuContainer}>
@@ -37,28 +32,36 @@ export default function HomeScreen() {
           style={styles.menuItem}
           onPress={() => navigation.navigate('Supermercados' as never)}
         >
-          <View style={[styles.iconContainer, { backgroundColor: '#4A90E2' }]}>
-            <Icon name="shopping-cart" size={30} color="#fff" />
+          <View style={styles.menuItemContent}>
+            <View style={[styles.iconContainer, { backgroundColor: '#EFF6FF' }]}>
+              <Icon name="shopping-basket" size={22} color="#3B82F6" />
+            </View>
+            <View style={styles.menuTextContainer}>
+              <Text style={styles.menuItemText}>Coletor de Preços</Text>
+              <Text style={styles.menuItemDescription}>
+                Cadastre supermercados, produtos e preços
+              </Text>
+            </View>
           </View>
-          <Text style={styles.menuItemText}>Coletor</Text>
-          <Text style={styles.menuItemDescription}>
-            Cadastre supermercados, produtos, marcas e preços
-          </Text>
-          <Icon name="chevron-right" size={16} color="#A0A0A0" style={styles.arrowIcon} />
+          <Icon name="chevron-right" size={16} color="#9CA3AF" />
         </Pressable>
         
         <Pressable 
           style={styles.menuItem}
           onPress={() => navigation.navigate('Resultados' as never)}
         >
-          <View style={[styles.iconContainer, { backgroundColor: '#50C878' }]}>
-            <Icon name="chart-bar" size={30} color="#fff" />
+          <View style={styles.menuItemContent}>
+            <View style={[styles.iconContainer, { backgroundColor: '#F0FDF4' }]}>
+              <Icon name="chart-pie" size={22} color="#22C55E" />
+            </View>
+            <View style={styles.menuTextContainer}>
+              <Text style={styles.menuItemText}>Resultados</Text>
+              <Text style={styles.menuItemDescription}>
+                Visualize os relatórios da cesta básica
+              </Text>
+            </View>
           </View>
-          <Text style={styles.menuItemText}>Resultados</Text>
-          <Text style={styles.menuItemDescription}>
-            Visualize os valores da cesta básica
-          </Text>
-          <Icon name="chevron-right" size={16} color="#A0A0A0" style={styles.arrowIcon} />
+          <Icon name="chevron-right" size={16} color="#9CA3AF" />
         </Pressable>
       </View>
       
@@ -70,67 +73,77 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
-    padding: 20,
+    backgroundColor: '#F9FAFB',
+    paddingHorizontal: 24,
   },
   header: {
-    marginTop: 40,
-    marginBottom: 60,
     alignItems: 'center',
+    paddingTop: 60,
+    paddingBottom: 40,
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    resizeMode: 'contain',
+    marginBottom: 24,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1F2937',
+    color: '#111827',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
     color: '#6B7280',
+    textAlign: 'center',
   },
   menuContainer: {
-    gap: 20,
+    gap: 16,
   },
   menuItem: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#E5E7EB'
+  },
+  menuItemContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
   },
   iconContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginRight: 16,
+  },
+  menuTextContainer: {
+    flex: 1,
   },
   menuItemText: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '600',
     color: '#1F2937',
-    marginBottom: 8,
   },
   menuItemDescription: {
     fontSize: 14,
     color: '#6B7280',
-    marginBottom: 8,
-  },
-  arrowIcon: {
-    position: 'absolute',
-    right: 20,
-    top: 20,
+    marginTop: 2,
   },
   footer: {
-    marginTop: 'auto',
+    position: 'absolute',
+    bottom: 30,
+    alignSelf: 'center',
     textAlign: 'center',
     color: '#9CA3AF',
-    paddingVertical: 20,
-    fontStyle: 'italic',
+    fontSize: 12,
   },
 });
-

@@ -1,4 +1,3 @@
-// src/navigation/AppNavigator.tsx
 import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -26,7 +25,6 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export default function AppNavigator() {
   const [isLoading, setIsLoading] = useState(true);
 
-  // Função chamada quando a animação do Splash terminar
   const handleSplashFinish = () => {
     setIsLoading(false);
   };
@@ -42,6 +40,7 @@ export default function AppNavigator() {
         screenOptions={{
           headerShown: false,
           contentStyle: { backgroundColor: '#F9FAFB' },
+          animation: 'slide_from_right', // Added a default animation
         }}
       >
         <Stack.Screen name="Home" component={HomeScreen} />

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { SectionList, Text, View, ActivityIndicator, Pressable, Alert } from 'react-native';
+import { SectionList, Text, View, ActivityIndicator, Pressable, Alert, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -44,9 +44,6 @@ export default function SupermarketDetailScreen({ route }: Props) {
     })();
   }, [supermarketId]);
 
-  /**
-   * Gera e compartilha o arquivo CSV
-   */
   const handleExport = async () => {
     setExporting(true);
     try {
@@ -62,65 +59,80 @@ export default function SupermarketDetailScreen({ route }: Props) {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-gray-50">
+      <SafeAreaView style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#4A90E2" />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50 px-6 pt-4">
-      {/* Header do supermercado */}
-      <View className="bg-white p-4 rounded-2xl mb-4 shadow-md flex-row justify-between items-center">
+    <SafeAreaView style={styles.container}>
+      <View style={styles.headerCard}>
         <View>
-          <Text className="text-2xl font-bold text-gray-800">{supermarketName}</Text>
-          <Text className="text-sm text-gray-500">{sections.length} produtos</Text>
+          <Text style={styles.supermarketName}>{supermarketName}</Text>
+          <Text style={styles.productCount}>{sections.length} produtos</Text>
         </View>
         <Icon name="shopping-basket" size={32} color="#4A90E2" />
       </View>
 
-      {/* Botão Exportar CSV */}
       <Pressable
         onPress={handleExport}
         disabled={exporting}
-        className="mb-6 bg-purple-600 rounded-full py-3 px-6 shadow-md flex-row justify-center items-center"
+        style={styles.exportButton}
       >
         {exporting ? (
           <ActivityIndicator size="small" color="#FFF" />
         ) : (
           <>
             <Icon name="download" size={18} color="#FFF" />
-            <Text className="text-white font-semibold ml-2">Exportar CSV</Text>
+            <Text style={styles.exportButtonText}>Exportar CSV</Text>
           </>
         )}
       </Pressable>
 
-      {/* Lista seccionada de produtos e marcas */}
       <SectionList
         sections={sections}
         keyExtractor={(item, idx) => item.brand + idx}
         renderSectionHeader={({ section: { title } }) => (
-          <View className="flex-row items-center mb-2 mt-4">
+          <View style={styles.sectionHeader}>
             <Icon name="cube" size={20} color="#4A90E2" />
-            <Text className="ml-2 text-lg font-semibold text-gray-800">{title}</Text>
+            <Text style={styles.sectionTitle}>{title}</Text>
           </View>
         )}
         renderItem={({ item }) => (
-          <View className="bg-white p-4 rounded-2xl mb-3 shadow-sm flex-row justify-between items-center">
-            <View className="flex-row items-center">
+          <View style={styles.itemRow}>
+            <View style={styles.brandContainer}>
               <Icon name="tag" size={16} color="#7B61FF" />
-              <Text className="ml-2 text-base font-medium text-gray-800">{item.brand}</Text>
+              <Text style={styles.brandText}>{item.brand}</Text>
             </View>
-            <View className="flex-row items-center">
+            <View style={styles.priceContainer}>
               <Icon name="dollar" size={14} color="#4A90E2" />
-              <Text className="ml-1 text-base font-semibold text-gray-800">R$ {item.price.toFixed(2)}</Text>
+              <Text style={styles.priceText}>R$ {item.price.toFixed(2)}</Text>
             </View>
           </View>
         )}
         ListEmptyComponent={() => (
-          <Text className="text-center text-gray-500 mt-10">Nenhum preço cadastrado ainda.</Text>
+          <Text style={styles.emptyText}>Nenhum preço cadastrado ainda.</Text>
         )}
       />
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+    container: { flex: 1, backgroundColor: '#f9fafb', paddingHorizontal: 20, paddingTop: 10 },
+    loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f9fafb' },
+    headerCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'white', padding: 20, borderRadius: 16, marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+    supermarketName: { fontSize: 24, fontWeight: 'bold', color: '#1F2937' },
+    productCount: { fontSize: 14, color: '#6B7280', marginTop: 4 },
+    exportButton: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', backgroundColor: '#9333EA', borderRadius: 25, paddingVertical: 12, marginBottom: 20, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+    exportButtonText: { color: 'white', fontWeight: 'semibold', marginLeft: 10, fontSize: 16 },
+    sectionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, marginTop: 20, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: '#E5E7EB' },
+    sectionTitle: { marginLeft: 10, fontSize: 18, fontWeight: '600', color: '#1F2937' },
+    itemRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'white', padding: 16, borderRadius: 12, marginBottom: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 },
+    brandContainer: { flexDirection: 'row', alignItems: 'center' },
+    brandText: { marginLeft: 10, fontSize: 16, color: '#374151' },
+    priceContainer: { flexDirection: 'row', alignItems: 'center' },
+    priceText: { marginLeft: 5, fontSize: 16, fontWeight: '600', color: '#1F2937' },
+    emptyText: { textAlign: 'center', color: '#6B7280', marginTop: 40, fontSize: 16 },
+});

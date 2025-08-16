@@ -1,19 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  FlatList,
-  Text,
-  View,
-  StyleSheet,
-  Pressable,
+  ActivityIndicator, FlatList, Text, View, StyleSheet, Pressable,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import {
-  listPrecosPorSuper,
-  PrecoDetail,
-} from '../supabase';
+import { listPrecosPorSuper, PrecoDetail } from '../supabase';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useNavigation } from '@react-navigation/native';
 
@@ -37,50 +29,44 @@ export default function OverviewScreen({ route }: Props) {
         setLoading(false);
       }
     }
-
     loadData();
   }, [supermarketId]);
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-gray-50">
+      <SafeAreaView style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#4A90E2" />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50 px-6 pt-4">
-      <Text className="text-3xl font-extrabold text-gray-800 mb-2">
-        🏬 {supermarketName}
-      </Text>
-      <Text className="text-xl font-semibold text-gray-700 mb-4">
-        Visão Geral de Preços
-      </Text>
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.supermarketTitle}>🏬 {supermarketName}</Text>
+      <Text style={styles.title}>Visão Geral de Preços</Text>
 
-      {/* Botões de navegação */}
-      <View className="flex-row mb-6">
+      <View style={styles.navButtonsContainer}>
         <Pressable
           onPress={() => navigation.goBack()}
-          className="bg-gray-500 rounded-full py-3 px-5 mr-2 flex-1 flex-row items-center justify-center"
+          style={[styles.navButton, styles.backButton]}
         >
           <Icon name="arrow-left" size={16} color="#FFFFFF" />
-          <Text className="text-white font-bold ml-2">Voltar</Text>
+          <Text style={styles.navButtonText}>Voltar</Text>
         </Pressable>
         
         <Pressable
           onPress={() => navigation.navigate('Home' as never)}
-          className="bg-blue-500 rounded-full py-3 px-5 flex-1 flex-row items-center justify-center"
+          style={[styles.navButton, styles.homeButton]}
         >
           <Icon name="home" size={16} color="#FFFFFF" />
-          <Text className="text-white font-bold ml-2">Menu Principal</Text>
+          <Text style={styles.navButtonText}>Menu Principal</Text>
         </Pressable>
       </View>
 
       {items.length === 0 ? (
-        <View className="flex-1 justify-center items-center">
+        <View style={styles.emptyContainer}>
           <Icon name="inbox" size={50} color="#CBD5E0" />
-          <Text className="text-gray-500 mt-4 text-center">
+          <Text style={styles.emptyText}>
             Não há preços cadastrados para este supermercado
           </Text>
         </View>
@@ -94,19 +80,19 @@ export default function OverviewScreen({ route }: Props) {
             const marcaNome = item.marcas && item.marcas[0]?.name || 'Marca';
             
             return (
-              <View className="bg-white p-4 rounded-2xl mb-4 shadow-md">
-                <View className="flex-row justify-between items-start">
+              <View style={styles.itemCard}>
+                <View style={styles.itemInfo}>
                   <View>
-                    <Text className="text-lg font-bold text-gray-800">{produtoNome}</Text>
-                    <Text className="text-sm text-gray-600 mt-1">{marcaNome}</Text>
+                    <Text style={styles.productName}>{produtoNome}</Text>
+                    <Text style={styles.brandName}>{marcaNome}</Text>
                   </View>
-                  <View className="bg-blue-100 px-3 py-1 rounded-full">
-                    <Text className="text-blue-700 font-bold">
+                  <View style={styles.priceBadge}>
+                    <Text style={styles.priceText}>
                       R$ {parseFloat(item.price.toString()).toFixed(2).replace('.', ',')}
                     </Text>
                   </View>
                 </View>
-                <Text className="text-xs text-gray-500 mt-3">
+                <Text style={styles.updateDate}>
                   Atualizado em: {new Date(item.created_at).toLocaleDateString()}
                 </Text>
               </View>
@@ -117,3 +103,24 @@ export default function OverviewScreen({ route }: Props) {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+    container: { flex: 1, backgroundColor: '#f9fafb', paddingHorizontal: 20, paddingTop: 10 },
+    loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f9fafb' },
+    supermarketTitle: { fontSize: 24, fontWeight: 'bold', color: '#1F2937', marginBottom: 4 },
+    title: { fontSize: 20, fontWeight: '600', color: '#6B7280', marginBottom: 20 },
+    navButtonsContainer: { flexDirection: 'row', marginBottom: 20, gap: 10 },
+    navButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderRadius: 25, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3 },
+    backButton: { backgroundColor: '#6B7280' },
+    homeButton: { backgroundColor: '#4A90E2' },
+    navButtonText: { color: 'white', fontWeight: 'bold', marginLeft: 8 },
+    emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    emptyText: { color: '#6B7280', marginTop: 16, textAlign: 'center' },
+    itemCard: { backgroundColor: 'white', padding: 16, borderRadius: 12, marginBottom: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 },
+    itemInfo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+    productName: { fontSize: 18, fontWeight: 'bold', color: '#1F2937' },
+    brandName: { fontSize: 14, color: '#6B7280', marginTop: 2 },
+    priceBadge: { backgroundColor: '#EFF6FF', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
+    priceText: { color: '#3B82F6', fontWeight: 'bold' },
+    updateDate: { fontSize: 12, color: '#9CA3AF', marginTop: 12, textAlign: 'right' },
+});
